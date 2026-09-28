@@ -26,12 +26,12 @@ window.ROCKET_CONFIG = {
   },
 
   contact: {
-    // Número de WhatsApp en formato internacional, sin "+" ni espacios (ej. "5215512345678").
-    // Si se deja vacío, el botón "Solicitar propuesta" usa el correo.
-    whatsapp: "",
-    email: "",
-    // Link para agendar llamada (Calendly, HubSpot Meetings, etc.)
-    bookingUrl: "https://igorocket.com",
+    // WhatsApp de ventas en formato internacional, sin "+" ni espacios.
+    // Recibe la cotización armada por el cliente (botón "Solicitar cotización").
+    whatsapp: "50765902559",
+    // Link para agendar llamada (Calendly, Google Calendar, HubSpot Meetings, etc.).
+    // Si se deja vacío, "Agendar llamada" abre WhatsApp pidiendo agendar una llamada.
+    bookingUrl: "",
   },
 
   divisions: [
@@ -107,6 +107,7 @@ window.ROCKET_CONFIG = {
     },
     {
       id: "consulting",
+      theme: "dark",       // "dark" = sección en azul marino para diferenciarla
       name: "ROCKET CONSULTING",
       tagline: "Estrategia: diseñamos cómo crecer y te acompañamos a lograrlo.",
       services: [
@@ -129,22 +130,6 @@ window.ROCKET_CONFIG = {
           levels: [
             { name: "Discovery", price: 1500, features: ["Entrevistas con el equipo", "Revisión de procesos y herramientas", "Informe de hallazgos y alcance"] },
           ],
-        },
-        {
-          id: "playbook",
-          name: "Playbook",
-          description: "Manual operativo comercial a la medida de tu empresa.",
-          type: "quote",
-          quoteMessage: "Se estima de acuerdo a los resultados del Discovery / Auditoría.",
-          requires: "auditoria",
-        },
-        {
-          id: "acompanamiento",
-          name: "Acompañamiento",
-          description: "Implementación guiada del playbook junto a tu equipo.",
-          type: "quote",
-          quoteMessage: "Se estima de acuerdo a los resultados de la consultoría.",
-          requires: "auditoria",
         },
         {
           id: "cmo",

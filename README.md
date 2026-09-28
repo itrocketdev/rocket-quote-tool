@@ -9,9 +9,11 @@ Es un sitio estático (HTML + CSS + JS, sin build ni dependencias), así que se 
 Todo está en **`config.js`**:
 
 - `levels`: nombre, precio, lista de lo que incluye y `from: true` para mostrar "Desde".
-- `type`: `monthly` (mensual), `oneTime` (pago único) o `quote` (se cotiza con llamada / tras el discovery).
+- `type`: `monthly` (mensual), `oneTime` (pago único) o `quote` (se cotiza con una llamada).
+- `theme: "dark"` en una división la muestra en azul marino con acento naranja (se usa en ROCKET Consulting).
 - `bundle.minServices` y `bundle.discountPct`: reglas del bundle.
-- `contact.whatsapp`, `contact.email`, `contact.bookingUrl`: destino del botón **Solicitar propuesta** y de **Agendar brief call**.
+- `contact.whatsapp`: WhatsApp de ventas que recibe la cotización (botón **Solicitar cotización**).
+- `contact.bookingUrl`: link de calendario (Calendly, Google Calendar, etc.) para **Agendar llamada** y **Agendar brief call**. Si está vacío, esos botones abren WhatsApp pidiendo una llamada.
 - `currency` y `locale`: moneda y formato.
 
 > ⚠️ Los precios y entregables actuales son **ejemplos**. Hay que reemplazarlos con los reales.
@@ -19,9 +21,9 @@ Todo está en **`config.js`**:
 ## Cómo funciona
 
 - El cliente elige servicios y nivel; el resumen muestra el total individual, el ahorro del bundle y el total final.
-- Web, Playbook y Acompañamiento no tienen precio: se incluyen en la solicitud como "a cotizar".
+- Web no tiene precio: se incluye en la solicitud como "a cotizar" y tiene su botón para agendar un brief call.
 - **Copiar link** genera una URL con la selección (`#s=sdr.1,meta.0,...`) para que el equipo comercial se la mande a un cliente.
-- **Solicitar propuesta** abre WhatsApp (si hay número), si no el correo, si no copia el resumen y abre el link para agendar.
+- Dos CTA: **Solicitar cotización** manda el resumen armado al WhatsApp de ventas; **Agendar llamada** abre el calendario.
 
 ## Correr localmente
 

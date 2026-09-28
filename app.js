@@ -26,7 +26,7 @@
 
   // ---------- Datos ----------
   const services = {};
-  CFG.divisions.forEach((d) => d.services.forEach((s) => (services[s.id] = { ...s, division: d.name })));
+  CFG.divisions.forEach((d) => d.services.forEach((s) => (services[s.id] = { ...s, division: d.name, divisionId: d.id })));
 
   const isPriced = (s) => s.type === "monthly" || s.type === "oneTime";
   const fmt = (n) =>
@@ -45,7 +45,7 @@
     root.innerHTML = CFG.divisions
       .map(
         (d) => `
-      <section class="division" aria-labelledby="div-${d.id}">
+      <section class="division division--${d.theme || "light"}" id="${d.id}" aria-labelledby="div-${d.id}">
         <div class="division__head">
           <h2 id="div-${d.id}">${d.name}</h2>
           <p>${d.tagline || ""}</p>
@@ -79,7 +79,7 @@
     if (s.type === "quote") {
       const req = s.requires && services[s.requires] ? `<p class="card__note">Requiere: ${services[s.requires].name}</p>` : "";
       const cta = s.cta
-        ? `<a class="btn btn--cta" href="${CFG.contact.bookingUrl}" target="_blank" rel="noopener">${s.cta}</a>`
+        ? `<a class="btn btn--cta" href="${bookingHref()}" target="_blank" rel="noopener">${s.cta}</a>`
         : "";
       return `${head}
         <p class="card__quote">${s.quoteMessage}</p>
@@ -186,7 +186,7 @@
           : `A cotizar<small>${s.id === "web" ? "brief call" : "posterior"}</small>`;
         return `<li>
           <div><span class="item-name">${s.name}</span>
-            <span class="item-level">${level && s.levels.length > 1 ? "Nivel " + level.name + " · " : ""}${s.division}</span>${warn}</div>
+            <span class="item-level"><i class="dot dot--${s.divisionId}"></i>${level && s.levels.length > 1 ? "Nivel " + level.name + " · " : ""}${s.division}</span>${warn}</div>
           <div style="display:flex;align-items:flex-start">
             <span class="item-price">${price}</span>
             <button type="button" class="item-remove" data-remove="${s.id}" aria-label="Quitar ${s.name}">×</button>
@@ -235,7 +235,6 @@
       : r.quoteItems.length
       ? "A cotizar"
       : fmt(0);
-    $("#requestBtn").disabled = r.items.length === 0;
   }
 
   // ---------- Resumen en texto / link ----------
@@ -297,17 +296,16 @@
     toastTimer = setTimeout(() => t.classList.remove("is-visible"), 2600);
   }
 
-  function request() {
-    const text = summaryText();
-    const { whatsapp, email, bookingUrl } = CFG.contact;
-    if (whatsapp) {
-      window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(text)}`, "_blank", "noopener");
-    } else if (email) {
-      location.href = `mailto:${email}?subject=${encodeURIComponent("Solicitud de propuesta – Cotizador ROCKET")}&body=${encodeURIComponent(text)}`;
-    } else {
-      copy(text, "Resumen copiado. Pégalo al agendar tu llamada.");
-      window.open(bookingUrl, "_blank", "noopener");
-    }
+  const waLink = (text) => `https://wa.me/${CFG.contact.whatsapp}?text=${encodeURIComponent(text)}`;
+
+  // Agendar llamada: usa el calendario si está configurado; si no, pide la llamada por WhatsApp
+  function bookingHref() {
+    return CFG.contact.bookingUrl || waLink("Hola ROCKET, me gustaría agendar una llamada para conocer sus servicios.");
+  }
+
+  function requestQuote() {
+    const text = selected.size ? summaryText() : "Hola ROCKET, me gustaría recibir una cotización de sus servicios.";
+    window.open(waLink(text), "_blank", "noopener");
   }
 
   // ---------- Update ----------
@@ -324,7 +322,7 @@
     document.querySelectorAll("[data-bundle-pct]").forEach((el) => (el.textContent = CFG.bundle.discountPct));
     document.querySelectorAll("[data-bundle-min]").forEach((el) => (el.textContent = CFG.bundle.minServices));
     document.querySelectorAll("[data-currency]").forEach((el) => (el.textContent = CFG.currency));
-    $("#footerBooking").href = CFG.contact.bookingUrl;
+    document.querySelectorAll("[data-booking]").forEach((el) => (el.href = bookingHref()));
 
     loadFromHash();
     renderCatalog();
@@ -340,7 +338,7 @@
       selected.clear();
       update();
     });
-    $("#requestBtn").addEventListener("click", request);
+    $("#requestBtn").addEventListener("click", requestQuote);
     $("#copyBtn").addEventListener("click", () => copy(summaryText(), "Resumen copiado"));
     $("#shareBtn").addEventListener("click", () => copy(shareUrl(), "Link copiado: compártelo con tu cliente"));
     $("#toggleSummary").addEventListener("click", (e) => {
