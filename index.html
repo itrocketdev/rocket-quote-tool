@@ -102,9 +102,10 @@
 
   <div class="lead" id="lead" hidden>
     <form class="lead__box" id="leadForm" role="dialog" aria-modal="true" aria-labelledby="leadTitle" novalidate>
+      <button type="button" class="lead__close" id="leadClose" aria-label="Cerrar">×</button>
       <img src="assets/logo.png" alt="ROCKET" width="120" height="47" class="lead__logo" />
-      <h2 id="leadTitle">Antes de cotizar, cuéntanos de ti</h2>
-      <p class="lead__intro">Completa tus datos para acceder al cotizador. Solo te tomará unos segundos.</p>
+      <h2 id="leadTitle">Tus datos</h2>
+      <p class="lead__intro" id="leadIntro"></p>
       <label class="field">
         <span>Nombre completo</span>
         <input name="nombre" type="text" autocomplete="name" required placeholder="Ej. María Pérez" />
@@ -125,7 +126,7 @@
         <input name="celular" type="tel" autocomplete="tel" required placeholder="+507 6000-0000" />
         <small class="field__error">Escribe un número válido (mínimo 7 dígitos).</small>
       </label>
-      <button type="submit" class="btn btn--primary">Ver cotizador</button>
+      <button type="submit" class="btn btn--primary" id="leadSubmit">Continuar</button>
       <p class="lead__legal">Usaremos tus datos solo para contactarte sobre tu cotización.</p>
     </form>
   </div>

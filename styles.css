@@ -343,6 +343,13 @@ body.is-locked #app { filter: blur(6px); pointer-events: none; user-select: none
   animation: lead-in .3s ease;
 }
 @keyframes lead-in { from { opacity: 0; transform: translateY(12px) scale(.98); } }
+.lead__box { position: relative; }
+.lead__close {
+  position: absolute; top: 14px; right: 14px;
+  width: 34px; height: 34px; border-radius: 50%; border: 0;
+  background: var(--bg); color: var(--graphite); font-size: 1.3rem; line-height: 1;
+}
+.lead__close:hover { background: var(--line); }
 .lead__logo { width: 110px; margin-bottom: 4px; }
 .lead__box h2 { margin: 0; font-size: 1.35rem; color: var(--navy); line-height: 1.2; }
 .lead__intro { margin: 0 0 4px; font-family: var(--font-alt); font-size: 0.9rem; color: var(--muted); }

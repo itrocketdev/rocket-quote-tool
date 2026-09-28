@@ -34,9 +34,10 @@ window.ROCKET_CONFIG = {
     bookingUrl: "",
   },
 
-  // Formulario obligatorio al entrar (nombre, empresa, email, celular).
+  // Datos del cliente (nombre, empresa, email, celular): se piden al pulsar
+  // "Solicitar cotización" o "Agendar llamada", antes de ir a WhatsApp / calendario.
   lead: {
-    required: true,
+    required: true,        // false = no pedir datos
     // URL que recibe los datos (webhook de Make, Zapier, Google Apps Script, etc.).
     // Se envía como formulario (application/x-www-form-urlencoded) con los campos:
     //   evento ("registro" o "cotizacion"), nombre, empresa, email, celular, cotizacion, link, fecha
