@@ -303,9 +303,9 @@
     return CFG.contact.bookingUrl || waLink("Hola ROCKET, me gustaría agendar una llamada para conocer sus servicios.");
   }
 
-  function requestQuote() {
-    const text = selected.size ? summaryText() : "Hola ROCKET, me gustaría recibir una cotización de sus servicios.";
-    window.open(waLink(text), "_blank", "noopener");
+  // Enlace (no window.open) para que WhatsApp abra también dentro de iframes/previews
+  function quoteHref() {
+    return waLink(selected.size ? summaryText() : "Hola ROCKET, me gustaría recibir una cotización de sus servicios.");
   }
 
   // ---------- Update ----------
@@ -313,6 +313,7 @@
     if (changedId) refreshCard(changedId);
     else Object.keys(services).forEach(refreshCard);
     renderSummary();
+    $("#requestBtn").href = quoteHref();
     const url = shareUrl();
     history.replaceState(null, "", url.slice(url.indexOf(location.pathname)));
   }
@@ -338,7 +339,6 @@
       selected.clear();
       update();
     });
-    $("#requestBtn").addEventListener("click", requestQuote);
     $("#copyBtn").addEventListener("click", () => copy(summaryText(), "Resumen copiado"));
     $("#shareBtn").addEventListener("click", () => copy(shareUrl(), "Link copiado: compártelo con tu cliente"));
     $("#toggleSummary").addEventListener("click", (e) => {
