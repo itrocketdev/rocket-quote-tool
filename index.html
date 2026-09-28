@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cotizador ROCKET</title>
+  <meta name="description" content="Arma tu plan con los servicios de ROCKET Lab y ROCKET Consulting y conoce tu inversión al instante. Ahorra con bundles de 3 o más servicios." />
+  <meta property="og:title" content="Cotizador ROCKET" />
+  <meta property="og:description" content="Arma tu plan y conoce tu inversión al instante." />
+  <meta property="og:image" content="assets/logo.png" />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap hero__inner">
+      <a href="https://igorocket.com" class="hero__logo" aria-label="ROCKET – ir al sitio principal">
+        <img src="assets/logo-white.png" alt="ROCKET" width="160" height="62" />
+      </a>
+      <h1>Cotiza tu plan en <span class="accent">segundos</span></h1>
+      <p class="hero__lead">
+        Elige los servicios y el nivel que necesitas. Conoce tu inversión al instante
+        y <strong>ahorra <span data-bundle-pct>15</span>% al armar un bundle de <span data-bundle-min>3</span> o más servicios</strong>.
+      </p>
+      <ol class="steps">
+        <li><span>1</span> Elige servicios</li>
+        <li><span>2</span> Ajusta el nivel</li>
+        <li><span>3</span> Solicita tu propuesta</li>
+      </ol>
+    </div>
+  </header>
+
+  <main class="wrap layout">
+    <div class="catalog" id="catalog" aria-live="polite">
+      <!-- Divisiones y servicios generados desde config.js -->
+    </div>
+
+    <aside class="summary" id="summary" aria-label="Resumen de tu cotización">
+      <div class="summary__bar" id="summaryBar">
+        <div>
+          <span class="summary__bar-label">Total mensual</span>
+          <strong class="summary__bar-total" id="barTotal">$0</strong>
+        </div>
+        <button type="button" class="btn btn--small" id="toggleSummary" aria-expanded="false">Ver resumen</button>
+      </div>
+
+      <div class="summary__panel" id="summaryPanel">
+        <div class="summary__head">
+          <h2>Tu cotización</h2>
+          <button type="button" class="link-btn" id="clearAll">Limpiar</button>
+        </div>
+
+        <div class="bundle-meter" id="bundleMeter">
+          <div class="bundle-meter__track"><div class="bundle-meter__fill" id="bundleFill"></div></div>
+          <p class="bundle-meter__text" id="bundleText"></p>
+        </div>
+
+        <ul class="summary__list" id="summaryList"></ul>
+        <p class="summary__empty" id="summaryEmpty">Aún no has agregado servicios. Selecciona uno para empezar.</p>
+
+        <div class="totals" id="totals"></div>
+
+        <div class="summary__actions">
+          <button type="button" class="btn btn--primary" id="requestBtn">Solicitar propuesta</button>
+          <div class="summary__secondary">
+            <button type="button" class="link-btn" id="copyBtn">Copiar resumen</button>
+            <button type="button" class="link-btn" id="shareBtn">Copiar link</button>
+          </div>
+        </div>
+        <p class="fineprint">Precios en <span data-currency>USD</span>, antes de impuestos. Cotización de referencia sujeta a validación con el equipo comercial.</p>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__inner">
+      <img src="assets/logo.png" alt="ROCKET" width="110" height="43" />
+      <p>¿Dudas? <a id="footerBooking" href="https://igorocket.com" target="_blank" rel="noopener">Agenda una llamada con nuestro equipo</a>.</p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
