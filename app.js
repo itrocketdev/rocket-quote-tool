@@ -314,23 +314,24 @@
   }
 
   // ---------- Datos del cliente (lead) ----------
-  // Se piden solo al pulsar un CTA que lleva a WhatsApp / agendar, y se recuerdan en el navegador.
+  // Al pulsar "Solicitar cotización" / "Agendar llamada" se abre el formulario; al enviarlo se
+  // continúa a WhatsApp (o al calendario) con el nombre, empresa y cotización del cliente.
+  // Los datos se recuerdan en el navegador para prellenar el formulario la próxima vez.
   const LEAD_KEY = "rocket_lead";
   let lead = null;
-  let pending = null; // "quote" | "booking" | null (editar datos)
+  let pending = "quote"; // "quote" | "booking"
 
   const LEAD_COPY = {
     quote: {
-      title: "¿A quién le enviamos la cotización?",
-      intro: "Déjanos tus datos y te llevamos a WhatsApp con tu cotización lista para enviar.",
-      button: "Continuar a WhatsApp",
+      title: "Recibe tu cotización",
+      intro: "Déjanos tus datos y envía tu cotización por WhatsApp a nuestro equipo comercial.",
+      button: "Enviar por WhatsApp",
     },
     booking: {
       title: "Agendemos tu llamada",
       intro: "Déjanos tus datos para que nuestro equipo pueda prepararse para la llamada.",
       button: "Continuar",
     },
-    edit: { title: "Tus datos", intro: "Actualiza tus datos de contacto.", button: "Guardar" },
   };
 
   const greeting = () => (lead ? `Hola ROCKET, soy ${lead.nombre} de ${lead.empresa}.` : "Hola ROCKET.");
@@ -355,24 +356,13 @@
     celular: (v) => v.replace(/\D/g, "").length >= 7,
   };
 
-  function showGreeting() {
-    const g = $("#greet");
-    if (!lead) {
-      g.hidden = true;
-      return;
-    }
-    g.innerHTML = 'Cotización para <strong></strong> · <button type="button" class="link-btn" id="editLead">Editar datos</button>';
-    g.querySelector("strong").textContent = `${lead.nombre} (${lead.empresa})`;
-    g.hidden = false;
-    $("#editLead").addEventListener("click", () => openLead(null));
-  }
-
   function openLead(action) {
     pending = action;
-    const copy = LEAD_COPY[action || "edit"];
+    const copy = LEAD_COPY[action];
     $("#leadTitle").textContent = copy.title;
     $("#leadIntro").textContent = copy.intro;
-    $("#leadSubmit").textContent = copy.button;
+    $("#leadSubmitText").textContent = copy.button;
+    $("#leadSubmit").classList.toggle("btn--wa", action === "quote" || !CFG.contact.bookingUrl);
     const form = $("#leadForm");
     if (lead) Object.keys(VALID).forEach((k) => (form.elements[k].value = lead[k]));
     $("#lead").hidden = false;
@@ -387,6 +377,27 @@
     $("#app").inert = false;
   }
 
+  // Valida el formulario; si está bien guarda los datos y devuelve true
+  function acceptLead() {
+    const form = $("#leadForm");
+    let firstBad = null;
+    Object.keys(VALID).forEach((k) => {
+      const ok = VALID[k](form.elements[k].value);
+      form.elements[k].closest(".field").classList.toggle("is-invalid", !ok);
+      if (!ok && !firstBad) firstBad = form.elements[k];
+    });
+    if (firstBad) {
+      firstBad.focus();
+      return false;
+    }
+    lead = {};
+    Object.keys(VALID).forEach((k) => (lead[k] = form.elements[k].value.trim()));
+    try {
+      localStorage.setItem(LEAD_KEY, JSON.stringify(lead));
+    } catch (_) {}
+    return true;
+  }
+
   function initLead() {
     try {
       lead = JSON.parse(localStorage.getItem(LEAD_KEY));
@@ -396,53 +407,36 @@
     if (lead && !Object.keys(VALID).every((k) => typeof lead[k] === "string" && VALID[k](lead[k]))) lead = null;
 
     const form = $("#leadForm");
+    const submit = $("#leadSubmit");
     form.addEventListener("input", (e) => {
       const f = e.target.closest(".field");
       if (f && VALID[e.target.name](e.target.value)) f.classList.remove("is-invalid");
     });
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      let firstBad = null;
-      Object.keys(VALID).forEach((k) => {
-        const ok = VALID[k](form.elements[k].value);
-        form.elements[k].closest(".field").classList.toggle("is-invalid", !ok);
-        if (!ok && !firstBad) firstBad = form.elements[k];
-      });
-      if (firstBad) {
-        firstBad.focus();
+
+    // El botón de enviar es un enlace real (target=_blank): así WhatsApp abre por un clic
+    // directo del usuario y no lo bloquea el navegador. Su destino se fija justo al pulsarlo.
+    submit.addEventListener("click", (e) => {
+      if (!acceptLead()) {
+        e.preventDefault();
         return;
       }
-      lead = {};
-      Object.keys(VALID).forEach((k) => (lead[k] = form.elements[k].value.trim()));
-      try {
-        localStorage.setItem(LEAD_KEY, JSON.stringify(lead));
-      } catch (_) {}
-      sendLead("registro", { link: shareUrl() });
-      closeLead();
-      showGreeting();
+      submit.href = pending === "quote" ? quoteHref() : bookingHref();
+      sendLead(pending === "quote" ? "cotizacion" : "agendar", { cotizacion: selected.size ? summaryText() : "", link: shareUrl() });
       refreshLinks();
-      // Continúa hacia donde iba (WhatsApp o calendario)
-      if (pending) {
-        if (pending === "quote") sendLead("cotizacion", { cotizacion: summaryText(), link: shareUrl() });
-        const a = document.createElement("a");
-        a.href = pending === "quote" ? quoteHref() : bookingHref();
-        a.target = "_blank";
-        a.rel = "noopener";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        pending = null;
-      }
+      setTimeout(closeLead, 0);
+    });
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      submit.click(); // Enter en un campo
     });
 
-    // Antes de ir a WhatsApp / agendar, pedir los datos si aún no los tenemos
+    // Los CTA de WhatsApp / agendar siempre pasan por el formulario
     document.addEventListener(
       "click",
       (e) => {
         const cta = e.target.closest("#requestBtn, [data-booking]");
-        if (!cta || lead || (CFG.lead && CFG.lead.required === false)) return;
+        if (!cta || (CFG.lead && CFG.lead.required === false)) return;
         e.preventDefault();
-        e.stopImmediatePropagation();
         openLead(cta.id === "requestBtn" ? "quote" : "booking");
       },
       true
@@ -458,7 +452,6 @@
     });
 
     refreshLinks();
-    showGreeting();
   }
 
   // ---------- Update ----------
@@ -490,7 +483,6 @@
       selected.clear();
       update();
     });
-    $("#requestBtn").addEventListener("click", () => sendLead("cotizacion", { cotizacion: summaryText(), link: shareUrl() }));
     initLead();
     $("#copyBtn").addEventListener("click", () => copy(summaryText(), "Resumen copiado"));
     $("#shareBtn").addEventListener("click", () => copy(shareUrl(), "Link copiado: compártelo con tu cliente"));

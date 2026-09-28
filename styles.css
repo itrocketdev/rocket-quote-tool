@@ -110,6 +110,7 @@ a { color: var(--sky); }
 
 /* ---------- Tarjeta de servicio ---------- */
 .card {
+  container-type: inline-size;
   background: var(--white);
   border: 1.5px solid var(--line);
   border-radius: var(--radius);
@@ -166,6 +167,15 @@ a { color: var(--sky); }
 .price__from { display: block; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
 .price__value { font-size: 1.3rem; font-weight: 700; color: var(--navy); }
 .price__unit { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+
+@container (max-width: 330px) {
+  .card__foot { flex-direction: column; align-items: stretch; gap: 10px; }
+  .card__foot .btn { width: 100%; }
+  .card__foot > .price__unit { text-align: center; }
+}
+@container (max-width: 250px) {
+  .levels button { font-size: 0.78rem; padding: 8px 2px; }
+}
 
 /* ---------- Botones ---------- */
 .btn {
@@ -364,10 +374,11 @@ body.is-locked #app { filter: blur(6px); pointer-events: none; user-select: none
 .field.is-invalid input { border-color: #e06050; }
 .field.is-invalid .field__error { display: block; }
 .lead__box .btn--primary { margin-top: 6px; }
+.lead__box .btn--wa { background: #25d366; }
+.lead__box .btn--wa:hover { background: #1ebe5b; }
+.lead__box .btn:not(.btn--wa) svg { display: none; }
 .lead__legal { margin: 0; text-align: center; font-size: 0.72rem; color: var(--muted); font-family: var(--font-alt); }
 
-.greet { margin: -6px 0 12px; font-size: 0.82rem; color: var(--muted); }
-.greet strong { color: var(--navy); font-weight: 500; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1240px) {
