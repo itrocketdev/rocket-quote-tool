@@ -79,7 +79,7 @@
     if (s.type === "quote") {
       const req = s.requires && services[s.requires] ? `<p class="card__note">Requiere: ${services[s.requires].name}</p>` : "";
       const cta = s.cta
-        ? `<a class="btn btn--cta" data-booking href="${bookingHref()}" target="_blank" rel="noopener">${s.cta}</a>`
+        ? `<button type="button" class="btn btn--cta" data-booking>${s.cta}</button>`
         : "";
       return `${head}
         <p class="card__quote">${s.quoteMessage}</p>
@@ -303,10 +303,6 @@
     return CFG.contact.bookingUrl || waLink(`${greeting()} Me gustaría agendar una llamada para conocer sus servicios.` + contactLines());
   }
 
-  function refreshLinks() {
-    $("#requestBtn").href = quoteHref();
-    document.querySelectorAll("[data-booking]").forEach((el) => (el.href = bookingHref()));
-  }
 
   // Enlace (no window.open) para que WhatsApp abra también dentro de iframes/previews
   function quoteHref() {
@@ -422,7 +418,6 @@
       }
       submit.href = pending === "quote" ? quoteHref() : bookingHref();
       sendLead(pending === "quote" ? "cotizacion" : "agendar", { cotizacion: selected.size ? summaryText() : "", link: shareUrl() });
-      refreshLinks();
       setTimeout(closeLead, 0);
     });
     form.addEventListener("submit", (e) => {
@@ -430,17 +425,17 @@
       submit.click(); // Enter en un campo
     });
 
-    // Los CTA de WhatsApp / agendar siempre pasan por el formulario
-    document.addEventListener(
-      "click",
-      (e) => {
-        const cta = e.target.closest("#requestBtn, [data-booking]");
-        if (!cta || (CFG.lead && CFG.lead.required === false)) return;
-        e.preventDefault();
-        openLead(cta.id === "requestBtn" ? "quote" : "booking");
-      },
-      true
-    );
+    // Los CTA de WhatsApp / agendar son botones (no enlaces) y siempre pasan por el formulario
+    document.addEventListener("click", (e) => {
+      const cta = e.target.closest("#requestBtn, [data-booking]");
+      if (!cta) return;
+      const action = cta.id === "requestBtn" ? "quote" : "booking";
+      if (CFG.lead && CFG.lead.required === false) {
+        window.open(action === "quote" ? quoteHref() : bookingHref(), "_blank", "noopener");
+        return;
+      }
+      openLead(action);
+    });
 
     // Se puede cerrar con la X, con Escape o tocando fuera
     $("#leadClose").addEventListener("click", closeLead);
@@ -451,7 +446,6 @@
       if (e.key === "Escape" && !$("#lead").hidden) closeLead();
     });
 
-    refreshLinks();
   }
 
   // ---------- Update ----------
@@ -459,7 +453,6 @@
     if (changedId) refreshCard(changedId);
     else Object.keys(services).forEach(refreshCard);
     renderSummary();
-    refreshLinks();
     const url = shareUrl();
     history.replaceState(null, "", url.slice(url.indexOf(location.pathname)));
   }

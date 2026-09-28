@@ -197,6 +197,7 @@ a { color: var(--sky); }
 .btn--small { padding: 8px 14px; font-size: 0.85rem; background: var(--sky); color: var(--white); }
 .link-btn { background: none; border: 0; color: var(--sky); font-weight: 500; font-size: 0.85rem; padding: 4px; }
 .link-btn:hover { text-decoration: underline; }
+.link-inline { background: none; border: 0; padding: 0; font: inherit; color: var(--sky); text-decoration: underline; }
 
 :focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }
 
