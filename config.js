@@ -34,6 +34,16 @@ window.ROCKET_CONFIG = {
     bookingUrl: "",
   },
 
+  // Formulario obligatorio al entrar (nombre, empresa, email, celular).
+  lead: {
+    required: true,
+    // URL que recibe los datos (webhook de Make, Zapier, Google Apps Script, etc.).
+    // Se envía como formulario (application/x-www-form-urlencoded) con los campos:
+    //   evento ("registro" o "cotizacion"), nombre, empresa, email, celular, cotizacion, link, fecha
+    // Si se deja vacío, los datos solo viajan en el mensaje de WhatsApp.
+    webhookUrl: "",
+  },
+
   divisions: [
     {
       id: "lab",

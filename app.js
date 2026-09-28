@@ -240,7 +240,7 @@
   // ---------- Resumen en texto / link ----------
   function summaryText() {
     const r = compute();
-    const lines = ["Hola ROCKET, me interesa esta cotización:", ""];
+    const lines = [`${greeting()} Me interesa esta cotización:`, ""];
     r.items.forEach(({ s, level }) => {
       lines.push(
         level
@@ -255,7 +255,7 @@
       if (r.oneTime) lines.push(`Pago único: ${fmt(r.oneTimeFinal)}`);
     }
     lines.push("", `Ver cotización: ${shareUrl()}`);
-    return lines.join("\n");
+    return lines.join("\n") + contactLines();
   }
 
   function shareUrl() {
@@ -305,7 +305,106 @@
 
   // Enlace (no window.open) para que WhatsApp abra también dentro de iframes/previews
   function quoteHref() {
-    return waLink(selected.size ? summaryText() : "Hola ROCKET, me gustaría recibir una cotización de sus servicios.");
+    return waLink(selected.size ? summaryText() : `${greeting()} Me gustaría recibir una cotización de sus servicios.` + contactLines());
+  }
+
+  // ---------- Formulario obligatorio (lead) ----------
+  const LEAD_KEY = "rocket_lead";
+  let lead = null;
+
+  const greeting = () => (lead ? `Hola ROCKET, soy ${lead.nombre} de ${lead.empresa}.` : "Hola ROCKET.");
+  const contactLines = () => (lead ? `\n\nMis datos:\nEmail: ${lead.email}\nCelular: ${lead.celular}` : "");
+
+  // Envía los datos al webhook configurado (sendBeacon: no bloquea la navegación ni requiere CORS)
+  function sendLead(evento, extra = {}) {
+    const url = CFG.lead && CFG.lead.webhookUrl;
+    if (!url || !lead) return;
+    const body = new URLSearchParams({ evento, ...lead, ...extra, fecha: new Date().toISOString() });
+    try {
+      if (!navigator.sendBeacon || !navigator.sendBeacon(url, body)) {
+        fetch(url, { method: "POST", body, mode: "no-cors", keepalive: true }).catch(() => {});
+      }
+    } catch (_) {}
+  }
+
+  const VALID = {
+    nombre: (v) => v.trim().length >= 3,
+    empresa: (v) => v.trim().length >= 2,
+    email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()),
+    celular: (v) => v.replace(/\D/g, "").length >= 7,
+  };
+
+  function showGreeting() {
+    const g = $("#greet");
+    if (!lead) {
+      g.hidden = true;
+      return;
+    }
+    g.innerHTML = 'Cotización para <strong></strong> · <button type="button" class="link-btn" id="editLead">Editar datos</button>';
+    g.querySelector("strong").textContent = `${lead.nombre} (${lead.empresa})`;
+    g.hidden = false;
+    $("#editLead").addEventListener("click", openLead);
+  }
+
+  function openLead() {
+    const form = $("#leadForm");
+    if (lead) Object.keys(VALID).forEach((k) => (form.elements[k].value = lead[k]));
+    $("#lead").hidden = false;
+    document.body.classList.add("is-locked");
+    $("#app").inert = true;
+    setTimeout(() => form.elements.nombre.focus(), 50);
+  }
+
+  function closeLead() {
+    $("#lead").hidden = true;
+    document.body.classList.remove("is-locked");
+    $("#app").inert = false;
+  }
+
+  function initLead() {
+    try {
+      lead = JSON.parse(localStorage.getItem(LEAD_KEY));
+    } catch (_) {
+      lead = null;
+    }
+    if (lead && !Object.keys(VALID).every((k) => typeof lead[k] === "string" && VALID[k](lead[k]))) lead = null;
+
+    const form = $("#leadForm");
+    form.addEventListener("input", (e) => {
+      const f = e.target.closest(".field");
+      if (f && VALID[e.target.name](e.target.value)) f.classList.remove("is-invalid");
+    });
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      let firstBad = null;
+      Object.keys(VALID).forEach((k) => {
+        const ok = VALID[k](form.elements[k].value);
+        form.elements[k].closest(".field").classList.toggle("is-invalid", !ok);
+        if (!ok && !firstBad) firstBad = form.elements[k];
+      });
+      if (firstBad) {
+        firstBad.focus();
+        return;
+      }
+      lead = {};
+      Object.keys(VALID).forEach((k) => (lead[k] = form.elements[k].value.trim()));
+      try {
+        localStorage.setItem(LEAD_KEY, JSON.stringify(lead));
+      } catch (_) {}
+      sendLead("registro", { link: shareUrl() });
+      closeLead();
+      showGreeting();
+      $("#requestBtn").href = quoteHref();
+    });
+
+    // El popup no tiene botón de cerrar y tampoco se cierra con Escape
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !$("#lead").hidden) e.preventDefault();
+    });
+
+    $("#requestBtn").href = quoteHref();
+    if (lead) showGreeting();
+    else if (!CFG.lead || CFG.lead.required !== false) openLead();
   }
 
   // ---------- Update ----------
@@ -339,6 +438,8 @@
       selected.clear();
       update();
     });
+    $("#requestBtn").addEventListener("click", () => sendLead("cotizacion", { cotizacion: summaryText(), link: shareUrl() }));
+    initLead();
     $("#copyBtn").addEventListener("click", () => copy(summaryText(), "Resumen copiado"));
     $("#shareBtn").addEventListener("click", () => copy(shareUrl(), "Link copiado: compártelo con tu cliente"));
     $("#toggleSummary").addEventListener("click", (e) => {

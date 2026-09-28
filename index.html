@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div id="app">
   <header class="hero">
     <div class="wrap hero__inner">
       <a href="https://igorocket.com" class="hero__logo" aria-label="ROCKET – ir al sitio principal">
@@ -57,6 +58,7 @@
           <h2>Tu cotización</h2>
           <button type="button" class="link-btn" id="clearAll">Limpiar</button>
         </div>
+        <p class="greet" id="greet" hidden></p>
 
         <div class="bundle-meter" id="bundleMeter">
           <div class="bundle-meter__track"><div class="bundle-meter__fill" id="bundleFill"></div></div>
@@ -94,7 +96,39 @@
     </div>
   </footer>
 
+  </div>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="lead" id="lead" hidden>
+    <form class="lead__box" id="leadForm" role="dialog" aria-modal="true" aria-labelledby="leadTitle" novalidate>
+      <img src="assets/logo.png" alt="ROCKET" width="120" height="47" class="lead__logo" />
+      <h2 id="leadTitle">Antes de cotizar, cuéntanos de ti</h2>
+      <p class="lead__intro">Completa tus datos para acceder al cotizador. Solo te tomará unos segundos.</p>
+      <label class="field">
+        <span>Nombre completo</span>
+        <input name="nombre" type="text" autocomplete="name" required placeholder="Ej. María Pérez" />
+        <small class="field__error">Escribe tu nombre completo.</small>
+      </label>
+      <label class="field">
+        <span>Empresa</span>
+        <input name="empresa" type="text" autocomplete="organization" required placeholder="Nombre de tu empresa" />
+        <small class="field__error">Escribe el nombre de tu empresa.</small>
+      </label>
+      <label class="field">
+        <span>Email</span>
+        <input name="email" type="email" autocomplete="email" required placeholder="tu@empresa.com" />
+        <small class="field__error">Escribe un email válido.</small>
+      </label>
+      <label class="field">
+        <span>Celular</span>
+        <input name="celular" type="tel" autocomplete="tel" required placeholder="+507 6000-0000" />
+        <small class="field__error">Escribe un número válido (mínimo 7 dígitos).</small>
+      </label>
+      <button type="submit" class="btn btn--primary">Ver cotizador</button>
+      <p class="lead__legal">Usaremos tus datos solo para contactarte sobre tu cotización.</p>
+    </form>
+  </div>
 
   <script src="config.js"></script>
   <script src="app.js"></script>

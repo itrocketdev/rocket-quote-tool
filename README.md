@@ -18,6 +18,12 @@ Todo está en **`config.js`**:
 
 > ⚠️ Los precios y entregables actuales son **ejemplos**. Hay que reemplazarlos con los reales.
 
+## Formulario obligatorio (datos del cliente)
+
+Al entrar se muestra un popup que no se puede cerrar hasta llenar **nombre completo, empresa, email y celular**. Los datos se guardan en el navegador del visitante (no se le vuelven a pedir) y se agregan al mensaje de WhatsApp.
+
+Para recibir cada registro también en una hoja o CRM, pon en `lead.webhookUrl` (en `config.js`) la URL de un webhook de Make, Zapier o Google Apps Script. Se envían dos eventos: `registro` (al llenar el formulario) y `cotizacion` (al pulsar **Solicitar cotización**), con los campos `nombre`, `empresa`, `email`, `celular`, `cotizacion`, `link` y `fecha`. Para desactivar el popup: `lead.required: false`.
+
 ## Cómo funciona
 
 - El cliente elige servicios y nivel; el resumen muestra el total individual, el ahorro del bundle y el total final.
