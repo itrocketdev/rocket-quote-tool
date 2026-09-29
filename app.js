@@ -41,8 +41,27 @@
 
   // ---------- Render catálogo ----------
   function renderCatalog() {
-    const root = $("#catalog");
-    root.innerHTML = CFG.divisions
+    const rec = recommendedIds();
+    let html = "";
+
+    if (rec.length) {
+      const labels = interestOptions().map((o) => o.label);
+      html += `
+      <section class="division division--rec" id="recomendados" aria-labelledby="rec-title">
+        <div class="rec__head">
+          <p class="rec__eyebrow">Recomendado para ti</p>
+          <h2 id="rec-title">Según lo que necesitas, te podemos ayudar con…</h2>
+          <p class="rec__meta">Te interesa: ${labels.join(" · ")} · <button type="button" class="link-btn" id="redoQuiz">Cambiar respuestas</button></p>
+        </div>
+        <div class="grid">${rec.map((id) => cardHTML(services[id])).join("")}</div>
+      </section>`;
+    }
+
+    const others = CFG.divisions
+      .map((d) => ({ ...d, list: d.services.filter((s) => !rec.includes(s.id)) }))
+      .filter((d) => d.list.length);
+    if (rec.length && others.length) html += `<h2 class="others-title" id="otros">Conoce nuestros otros servicios</h2>`;
+    html += others
       .map(
         (d) => `
       <section class="division division--${d.theme || "light"}" id="${d.id}" aria-labelledby="div-${d.id}">
@@ -50,16 +69,27 @@
           <h2 id="div-${d.id}">${d.name}</h2>
           <p>${d.tagline || ""}</p>
         </div>
-        <div class="grid">${d.services.map(cardHTML).join("")}</div>
+        <div class="grid">${d.list.map(cardHTML).join("")}</div>
       </section>`
       )
       .join("");
 
-    root.addEventListener("click", onCatalogClick);
+    $("#catalog").innerHTML = html;
+    renderJump(rec.length > 0, others);
+  }
+
+  // Accesos rápidos del hero: a recomendados/otros si hay cuestionario, o a cada división
+  function renderJump(personalized, others) {
+    const jump = $("#jump");
+    const link = (href, cls, dot, text) =>
+      `<a href="#${href}" class="jump__link jump__link--${cls}"><i class="dot dot--${dot}"></i>${text}</a>`;
+    jump.innerHTML = personalized
+      ? link("recomendados", "lab", "lab", "RECOMENDADOS PARA TI") + (others.length ? link("otros", "consulting", "consulting", "OTROS SERVICIOS") : "")
+      : CFG.divisions.map((d) => link(d.id, d.id, d.id, d.name)).join("");
   }
 
   function cardHTML(s) {
-    return `<article class="card" data-id="${s.id}">${cardInner(s)}</article>`;
+    return `<article class="card card--${s.divisionId}" data-id="${s.id}">${cardInner(s)}</article>`;
   }
 
   function cardInner(s) {
@@ -69,6 +99,7 @@
       <div class="card__top">
         <div class="card__icon">${icon(s.id)}</div>
         <div>
+          <span class="card__division"><i class="dot dot--${s.divisionId}"></i>${s.division}</span>
           <h3 class="card__title">${s.name}</h3>
           <p class="card__desc">${s.description || ""}</p>
           ${s.type === "oneTime" ? '<span class="tag">Pago único</span>' : ""}
@@ -258,15 +289,26 @@
     return lines.join("\n") + contactLines();
   }
 
+  // Link compartible: #i=<intereses>&s=<servicios.nivel>
   function shareUrl() {
     const q = [...selected.entries()].map(([id, l]) => (isPriced(services[id]) ? `${id}.${l}` : id)).join(",");
-    return `${location.origin}${location.pathname}${q ? "#s=" + q : ""}`;
+    const parts = [];
+    if (interests.length) parts.push("i=" + interests.join(","));
+    if (q) parts.push("s=" + q);
+    return `${location.origin}${location.pathname}${parts.length ? "#" + parts.join("&") : ""}`;
   }
 
+  const hashParam = (key) => {
+    const m = location.hash.match(new RegExp(`(?:^#|&)${key}=([^&]*)`));
+    return m ? decodeURIComponent(m[1]) : null;
+  };
+
   function loadFromHash() {
-    const m = location.hash.match(/s=([^&]+)/);
-    if (!m) return;
-    decodeURIComponent(m[1])
+    const i = hashParam("i");
+    if (i !== null) setInterests(i.split(","));
+    const s = hashParam("s");
+    if (!s) return;
+    s
       .split(",")
       .forEach((tok) => {
         const [id, l] = tok.split(".");
@@ -331,7 +373,9 @@
   };
 
   const greeting = () => (lead ? `Hola ROCKET, soy ${lead.nombre} de ${lead.empresa}.` : "Hola ROCKET.");
-  const contactLines = () => (lead ? `\n\nMis datos:\nEmail: ${lead.email}\nCelular: ${lead.celular}` : "");
+  const contactLines = () =>
+    (interests.length ? `\n\nMe interesa: ${interestOptions().map((o) => o.label).join(" / ")}` : "") +
+    (lead ? `\n\nMis datos:\nEmail: ${lead.email}\nCelular: ${lead.celular}` : "");
 
   // Envía los datos al webhook configurado (sendBeacon: no bloquea la navegación ni requiere CORS)
   function sendLead(evento, extra = {}) {
@@ -417,7 +461,11 @@
         return;
       }
       submit.href = pending === "quote" ? quoteHref() : bookingHref();
-      sendLead(pending === "quote" ? "cotizacion" : "agendar", { cotizacion: selected.size ? summaryText() : "", link: shareUrl() });
+      sendLead(pending === "quote" ? "cotizacion" : "agendar", {
+        intereses: interestOptions().map((o) => o.label).join(" / "),
+        cotizacion: selected.size ? summaryText() : "",
+        link: shareUrl(),
+      });
       setTimeout(closeLead, 0);
     });
     form.addEventListener("submit", (e) => {
@@ -448,6 +496,87 @@
 
   }
 
+  // ---------- Cuestionario inicial ----------
+  // Lo que elige el cliente define qué servicios se muestran arriba como recomendados.
+  // Se recuerda en el navegador y viaja en el link compartido (#i=...).
+  const QUIZ_KEY = "rocket_intereses";
+  const quizOptions = (CFG.quiz && CFG.quiz.options) || [];
+  let interests = [];
+
+  const interestOptions = () => quizOptions.filter((o) => interests.includes(o.id));
+
+  function setInterests(ids) {
+    interests = quizOptions.map((o) => o.id).filter((id) => ids.includes(id));
+  }
+
+  function recommendedIds() {
+    const out = [];
+    interestOptions().forEach((o) => o.services.forEach((id) => services[id] && !out.includes(id) && out.push(id)));
+    return out;
+  }
+
+  function renderQuiz() {
+    $("#quizTitle").textContent = CFG.quiz.title;
+    $("#quizQuestion").textContent = CFG.quiz.question;
+    $("#quizOptions").innerHTML = quizOptions
+      .map(
+        (o, i) => `
+        <label class="quiz__opt">
+          <input type="checkbox" name="interes" value="${o.id}" ${interests.includes(o.id) ? "checked" : ""} />
+          <span class="quiz__num">${i + 1}</span>
+          <span class="quiz__label">${o.label}</span>
+          <span class="quiz__check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+        </label>`
+      )
+      .join("");
+    syncQuizButton();
+  }
+
+  const checkedInterests = () => [...document.querySelectorAll('#quizForm input[name="interes"]:checked')].map((el) => el.value);
+  const syncQuizButton = () => ($("#quizGo").disabled = checkedInterests().length === 0);
+
+  function showQuiz() {
+    renderQuiz();
+    $("#quiz").hidden = false;
+    document.body.classList.add("is-quiz");
+    window.scrollTo(0, 0);
+  }
+
+  function finishQuiz(ids) {
+    setInterests(ids);
+    try {
+      localStorage.setItem(QUIZ_KEY, JSON.stringify(interests));
+    } catch (_) {}
+    $("#quiz").hidden = true;
+    document.body.classList.remove("is-quiz");
+    renderCatalog();
+    update();
+    window.scrollTo(0, 0);
+  }
+
+  // Decide si mostrar el cuestionario: no si el link ya trae intereses o una cotización
+  // (p. ej. un link que comercial le manda al cliente), ni si el cliente ya lo respondió.
+  function initQuiz() {
+    $("#quizForm").addEventListener("change", syncQuizButton);
+    $("#quizForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (checkedInterests().length) finishQuiz(checkedInterests());
+    });
+    $("#quizSkip").addEventListener("click", () => finishQuiz([]));
+    $("#catalog").addEventListener("click", (e) => {
+      if (e.target.closest("#redoQuiz")) showQuiz();
+    });
+
+    if (!CFG.quiz || !CFG.quiz.enabled || !quizOptions.length) return;
+    if (hashParam("i") !== null || hashParam("s")) return;
+    let stored = null;
+    try {
+      stored = JSON.parse(localStorage.getItem(QUIZ_KEY));
+    } catch (_) {}
+    if (Array.isArray(stored)) setInterests(stored);
+    else showQuiz();
+  }
+
   // ---------- Update ----------
   function update(changedId) {
     if (changedId) refreshCard(changedId);
@@ -463,9 +592,11 @@
     document.querySelectorAll("[data-bundle-min]").forEach((el) => (el.textContent = CFG.bundle.minServices));
     document.querySelectorAll("[data-currency]").forEach((el) => (el.textContent = CFG.currency));
     loadFromHash();
+    initQuiz();
     renderCatalog();
     update();
 
+    $("#catalog").addEventListener("click", onCatalogClick);
     $("#summaryList").addEventListener("click", (e) => {
       const b = e.target.closest("[data-remove]");
       if (!b) return;

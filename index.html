@@ -16,6 +16,20 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <section class="quiz" id="quiz" hidden aria-labelledby="quizTitle">
+    <div class="quiz__inner">
+      <img src="assets/logo-white.png" alt="ROCKET" width="150" height="58" class="quiz__logo" />
+      <h1 id="quizTitle">¿En qué te podemos ayudar?</h1>
+      <p class="quiz__question" id="quizQuestion">Me interesa saber más sobre:</p>
+      <p class="quiz__hint">Puedes elegir una o varias opciones.</p>
+      <form id="quizForm">
+        <div class="quiz__options" id="quizOptions"></div>
+        <button type="submit" class="btn btn--primary quiz__go" id="quizGo" disabled>Ver mis soluciones →</button>
+      </form>
+      <button type="button" class="quiz__skip" id="quizSkip">Prefiero ver todos los servicios</button>
+    </div>
+  </section>
+
   <div id="app">
   <header class="hero">
     <div class="wrap hero__inner">
@@ -32,7 +46,7 @@
         <li><span>2</span> Ajusta el nivel</li>
         <li><span>3</span> Solicita tu cotización</li>
       </ol>
-      <nav class="jump" aria-label="Ir a sección">
+      <nav class="jump" id="jump" aria-label="Ir a sección">
         <a href="#lab" class="jump__link jump__link--lab"><i class="dot dot--lab"></i>ROCKET LAB</a>
         <a href="#consulting" class="jump__link jump__link--consulting"><i class="dot dot--consulting"></i>ROCKET CONSULTING</a>
       </nav>

@@ -34,6 +34,31 @@ window.ROCKET_CONFIG = {
     bookingUrl: "",
   },
 
+  // Mini cuestionario al entrar. Según lo que elija el cliente, esos servicios
+  // se muestran arriba como recomendados y el resto en "Conoce nuestros otros servicios".
+  quiz: {
+    enabled: true,
+    title: "¿En qué te podemos ayudar?",
+    question: "Me interesa saber más sobre:",
+    options: [
+      {
+        id: "estrategia",
+        label: "Estrategia / Consultoría comercial digital",
+        services: ["estrategia", "auditoria", "cmo"],
+      },
+      {
+        id: "leads",
+        label: "Generación de leads o mejorar la calidad de mis leads",
+        services: ["meta", "google", "seo"],
+      },
+      {
+        id: "web",
+        label: "Crear un nuevo sitio web o posicionar mi web",
+        services: ["seo", "tech", "web"],
+      },
+    ],
+  },
+
   // Datos del cliente (nombre, empresa, email, celular): se piden al pulsar
   // "Solicitar cotización" o "Agendar llamada", antes de ir a WhatsApp / calendario.
   lead: {

@@ -18,6 +18,12 @@ Todo está en **`config.js`**:
 
 > ⚠️ Los precios y entregables actuales son **ejemplos**. Hay que reemplazarlos con los reales.
 
+## Cuestionario inicial
+
+Al entrar, el visitante responde "Me interesa saber más sobre:" (una o varias opciones). Después ve arriba **"Según lo que necesitas, te podemos ayudar con…"** con los servicios de las opciones elegidas, y abajo **"Conoce nuestros otros servicios"** con el resto.
+
+Las preguntas y qué servicios recomienda cada una se editan en `quiz.options` de `config.js`. Las respuestas se recuerdan en el navegador, viajan en el link compartido (`#i=...`) y se incluyen en el mensaje de WhatsApp. Un link con cotización (`#s=...`) abre directo la página, sin cuestionario. Para desactivarlo: `quiz.enabled: false`.
+
 ## Datos del cliente
 
 El cotizador se usa libremente. Al pulsar **Solicitar cotización**, **Agendar llamada** o **Agendar brief call**, se abre un popup que pide **nombre completo, empresa, email y celular** antes de continuar a WhatsApp o al calendario. Los datos se guardan en el navegador del visitante (no se le vuelven a pedir) y se agregan al mensaje de WhatsApp.

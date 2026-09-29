@@ -336,6 +336,84 @@ a { color: var(--sky); }
 }
 .btn--outline:hover { background: var(--navy); color: var(--white); }
 
+/* ---------- Cuestionario inicial ---------- */
+body.is-quiz #app { display: none; }
+.quiz[hidden] { display: none; }
+.quiz {
+  min-height: 100vh; min-height: 100dvh;
+  display: grid; place-items: center; padding: 40px 16px;
+  color: var(--white);
+  background:
+    radial-gradient(900px 400px at 85% -10%, rgba(41, 171, 226, 0.35), transparent 60%),
+    radial-gradient(700px 350px at 0% 110%, rgba(247, 147, 29, 0.16), transparent 60%),
+    var(--navy);
+}
+.quiz__inner { width: min(640px, 100%); }
+.quiz__logo { width: 140px; margin-bottom: 36px; }
+.quiz h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); line-height: 1.1; margin: 0 0 14px; }
+.quiz__question { margin: 0; font-size: 1.15rem; font-weight: 500; color: var(--sky); }
+.quiz__hint { margin: 4px 0 22px; font-family: var(--font-alt); font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); }
+.quiz__options { display: grid; gap: 12px; }
+.quiz__opt {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px; border-radius: 16px; cursor: pointer;
+  background: rgba(255, 255, 255, 0.06); border: 1.5px solid rgba(255, 255, 255, 0.18);
+  transition: background .15s, border-color .15s, transform .1s;
+}
+.quiz__opt:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(41, 171, 226, 0.6); }
+.quiz__opt:active { transform: scale(.99); }
+.quiz__opt input { position: absolute; opacity: 0; pointer-events: none; }
+.quiz__num {
+  flex: none; width: 34px; height: 34px; border-radius: 10px;
+  display: grid; place-items: center; font-weight: 600; font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.1); color: var(--sky);
+}
+.quiz__label { flex: 1; font-size: 1rem; font-weight: 500; line-height: 1.35; }
+.quiz__check {
+  flex: none; width: 24px; height: 24px; border-radius: 7px;
+  border: 2px solid rgba(255, 255, 255, 0.4); display: grid; place-items: center;
+  transition: background .15s, border-color .15s;
+}
+.quiz__check svg { width: 14px; height: 14px; opacity: 0; }
+.quiz__opt:has(input:checked) { background: rgba(41, 171, 226, 0.18); border-color: var(--sky); }
+.quiz__opt:has(input:checked) .quiz__num { background: var(--sky); color: var(--white); }
+.quiz__opt:has(input:checked) .quiz__check { background: var(--sky); border-color: var(--sky); }
+.quiz__opt:has(input:checked) .quiz__check svg { opacity: 1; }
+.quiz__opt:has(input:focus-visible) { outline: 3px solid var(--sky); outline-offset: 2px; }
+.quiz__go { margin-top: 22px; }
+.quiz__skip {
+  display: block; margin: 16px auto 0; background: none; border: 0; padding: 6px;
+  color: rgba(255, 255, 255, 0.75); font-size: 0.88rem; text-decoration: underline;
+}
+.quiz__skip:hover { color: var(--white); }
+
+/* ---------- Recomendados ---------- */
+.division--rec {
+  background: var(--white); border-radius: 24px; padding: 22px 20px 20px;
+  box-shadow: var(--shadow); border: 2px solid var(--sky);
+}
+.rec__head { margin-bottom: 18px; }
+.rec__eyebrow {
+  margin: 0 0 6px; font-size: 0.72rem; font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--sky);
+}
+.rec__head h2 { margin: 0; font-size: clamp(1.25rem, 2.4vw, 1.6rem); color: var(--navy); line-height: 1.2; }
+.rec__meta { margin: 6px 0 0; font-family: var(--font-alt); font-size: 0.88rem; color: var(--muted); }
+.rec__meta .link-btn { padding: 0; font-size: inherit; }
+.others-title {
+  margin: 8px 0 16px; font-size: 1.25rem; color: var(--navy);
+  display: flex; align-items: center; gap: 14px;
+}
+.others-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+.card__division { display: none; }
+.division--rec .card__division {
+  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 6px;
+  font-size: 0.66rem; font-weight: 600; letter-spacing: .12em; color: var(--muted);
+}
+.division--rec .card__division .dot { margin: 0; }
+.division--rec .card--consulting .card__icon { background: linear-gradient(135deg, var(--orange), #c45f00); }
+
 /* ---------- Formulario obligatorio (lead) ---------- */
 body.is-locked { overflow: hidden; }
 body.is-locked #app { filter: blur(6px); pointer-events: none; user-select: none; }
